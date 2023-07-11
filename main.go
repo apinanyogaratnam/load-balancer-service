@@ -2,15 +2,18 @@ package main
 
 import (
 	"encoding/json"
-	"net/http"
 	"log"
+	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 type Load struct {
-	Cpu     float64 `json:"cpu"`
-	Memory  float64 `json:"memory"`
-	Disk    float64 `json:"disk"`
-	ServerId int    `json:"server_id"`
+	Cpu      float64 `json:"cpu"`
+	Memory   float64 `json:"memory"`
+	Disk     float64 `json:"disk"`
+	ServerId int     `json:"server_id"`
 }
 
 type Test struct {
@@ -29,7 +32,7 @@ func getMinLoad(load1 *Load, load2 *Load) *Load {
 	return load2
 }
 
-func main() {
+func findMinLoadServer() *Load {
 	urls := []string{
 		"http://localhost:8000",
 		"http://localhost:8001",
@@ -56,7 +59,7 @@ func main() {
 	}
 	log.Println("Min load is:", minLoad)
 
-	resp, err := http.Get(urls[minLoad.ServerId - 1] + "/test")
+	resp, err := http.Get(urls[minLoad.ServerId-1] + "/test")
 	if err != nil {
 		log.Fatalln("Error calling server:", minLoad.ServerId, err)
 	}
@@ -66,4 +69,17 @@ func main() {
 	test := new(Test)
 	json.NewDecoder(resp.Body).Decode(&test)
 	log.Printf("Test response from min load server %d: %s\n", minLoad.ServerId, test.Hello)
+
+	return minLoad
+}
+
+func main() {
+	r := mux.NewRouter()
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		minLoad := findMinLoadServer()
+		http.Redirect(w, r, "http://localhost:800"+strconv.Itoa(minLoad.ServerId - 1), http.StatusFound)
+	})
+
+	http.ListenAndServe(":4000", r)
 }
