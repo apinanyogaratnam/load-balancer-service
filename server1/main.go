@@ -17,6 +17,10 @@ type Load struct {
 	Disk    float64 `json:"disk"`
 }
 
+type Test struct {
+	Hello string `json:"hello"`
+}
+
 func measureLoad() *Load {
 	// Measure response time
 	// resp, err := http.Get(url)
@@ -49,5 +53,15 @@ func main() {
 		log.Println("Request received")
 	})
 
-	http.ListenAndServe(":8001", r)
+	r.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(
+			Test{
+				Hello: "world",
+			},
+		)
+		log.Println("Request received")
+	})
+
+	http.ListenAndServe(":8000", r)
 }

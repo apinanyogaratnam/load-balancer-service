@@ -9,3 +9,6 @@ start2:
 
 start3:
 	go run server3/main.go
+
+up:
+	cd server1 && docker-compose up --build

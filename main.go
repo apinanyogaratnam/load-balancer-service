@@ -13,6 +13,10 @@ type Load struct {
 	ServerId int    `json:"server_id"`
 }
 
+type Test struct {
+	Hello string `json:"hello"`
+}
+
 func (load Load) sum() float64 {
 	return load.Cpu + load.Memory + load.Disk
 }
@@ -27,9 +31,9 @@ func getMinLoad(load1 *Load, load2 *Load) *Load {
 
 func main() {
 	urls := []string{
+		"http://localhost:8000",
 		"http://localhost:8001",
 		"http://localhost:8002",
-		"http://localhost:8003",
 	}
 
 	minLoad := new(Load)
@@ -51,4 +55,15 @@ func main() {
 		}
 	}
 	log.Println("Min load is:", minLoad)
+
+	resp, err := http.Get(urls[minLoad.ServerId - 1] + "/test")
+	if err != nil {
+		log.Fatalln("Error calling server:", minLoad.ServerId, err)
+	}
+
+	defer resp.Body.Close()
+
+	test := new(Test)
+	json.NewDecoder(resp.Body).Decode(&test)
+	log.Printf("Test response from min load server %d: %s\n", minLoad.ServerId, test.Hello)
 }
