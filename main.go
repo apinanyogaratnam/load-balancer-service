@@ -1,55 +1,43 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
-	"time"
-	"github.com/shirou/gopsutil/cpu"
-	"github.com/shirou/gopsutil/mem"
-	"github.com/shirou/gopsutil/disk"
+	"log"
 )
 
 type Load struct {
-	elapsed float64
-	cpu float64
-	memory float64
-	disk float64
+	Cpu     float64 `json:"cpu"`
+	Memory  float64 `json:"memory"`
+	Disk    float64 `json:"disk"`
 }
 
-func measureLoad(url string) (*Load) {
-	start := time.Now()
-
-	// Measure response time
-	resp, err := http.Get(url)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer resp.Body.Close()
-
-	elapsed := time.Since(start).Seconds()
-
-	// Measure CPU load
-	percent, _ := cpu.Percent(time.Second, false)
-
-	// Measure memory usage
-	v, _ := mem.VirtualMemory()
-
-	// Measure disk usage
-	d, _ := disk.Usage("/")
-
-	// return elapsed, percent[0], v.UsedPercent, d.UsedPercent
-	return &Load{
-		elapsed: elapsed,
-		cpu: percent[0],
-		memory: v.UsedPercent,
-		disk: d.UsedPercent,
-	}
-}
 
 func main() {
-	server1Load := measureLoad("http://localhost:8000")
-	server2Load := measureLoad("http://localhost:8000")
-	server3Load := measureLoad("http://localhost:8000")
+	resp, err := http.Get("http://localhost:8001")
+	if err != nil {
+		log.Fatalln("Error calling server 1")
+	}
+	defer resp.Body.Close()
+	load := new(Load)
+	json.NewDecoder(resp.Body).Decode(&load)
+	log.Println(load)
 
-	fmt.Println(server1Load, server2Load, server3Load)
+	resp1, err := http.Get("http://localhost:8002")
+	if err != nil {
+		log.Fatalln("Error calling server 2")
+	}
+	defer resp1.Body.Close()
+	load1 := new(Load)
+	json.NewDecoder(resp1.Body).Decode(&load1)
+	log.Println(load1)
+
+	resp2, err := http.Get("http://localhost:8003")
+	if err != nil {
+		log.Fatalln("Error calling server 3")
+	}
+	defer resp2.Body.Close()
+	load2 := new(Load)
+	json.NewDecoder(resp2.Body).Decode(&load2)
+	log.Println(load2)
 }
