@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-
-	"github.com/gorilla/mux"
 )
 
 type Load struct {
@@ -74,7 +72,7 @@ func findMinLoadServer() *Load {
 }
 
 func main() {
-	r := mux.NewRouter()
+	r := http.NewServeMux()
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		minLoad := findMinLoadServer()
