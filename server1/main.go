@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"encoding/json"
 
-	"github.com/gorilla/mux"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
@@ -46,7 +45,7 @@ func measureLoad() *Load {
 }
 
 func main() {
-	r := mux.NewRouter()
+	r := http.NewServeMux()
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(measureLoad())
