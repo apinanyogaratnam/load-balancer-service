@@ -1,8 +1,11 @@
 start:
-	go run server1/main.go
+	go run main.go
 
 start1:
-	go run server2/main.go
+	go run server1/main.go
 
 start2:
+	go run server2/main.go
+
+start3:
 	go run server3/main.go
